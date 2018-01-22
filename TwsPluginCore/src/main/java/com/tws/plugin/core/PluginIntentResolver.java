@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.tws.plugin.content.ComponentInfo;
 import com.tws.plugin.content.DisplayItem;
@@ -181,24 +182,34 @@ public class PluginIntentResolver {
         ArrayList<ComponentInfo> componentInfos = matchPlugin(intent, DisplayItem.TYPE_ACTIVITY, packageName);
         if (componentInfos != null && componentInfos.size() > 0) {
             String className = componentInfos.get(0).name;
+            Log.e(TAG, "className:" + className);
             final String applicationPackageName = PluginLoader.getApplication().getPackageName();
+            Log.e(TAG, "applicationPackageName:" + applicationPackageName);
             PluginDescriptor pd = (TextUtils.isEmpty(packageName) || applicationPackageName.equals(packageName)) ? PluginManagerHelper
                     .getPluginDescriptorByClassName(className) : PluginManagerHelper
                     .getPluginDescriptorByPluginId(packageName);
 
             if (pd != null) {
                 packageName = pd.getPackageName();
+                Log.e(TAG, "packageName:" + packageName);
             }
 
             PluginActivityInfo pluginActivityInfo = pd.getActivityInfos().get(className);
 
             String stubActivityName = PluginManagerHelper.bindStubActivity(className,
                     Integer.parseInt(pluginActivityInfo.getLaunchMode()));
-
-            intent.setComponent(new ComponentName(applicationPackageName, stubActivityName));
-            // PluginInstrumentationWrapper检测到这个标记后会进行替换
-            intent.setAction(className + CLASS_SEPARATOR + (intent.getAction() == null ? "" : intent.getAction())
-                    + CLASS_SEPARATOR + (TextUtils.isEmpty(packageName) ? "" : packageName));
+            if (stubActivityName != null) {
+                if ("".equals(stubActivityName)) {
+                    intent.setComponent(new ComponentName(applicationPackageName, stubActivityName));
+                    // PluginInstrumentationWrapper检测到这个标记后会进行替换
+                    intent.setAction(className + CLASS_SEPARATOR + (intent.getAction() == null ? "" : intent.getAction())
+                            + CLASS_SEPARATOR + (TextUtils.isEmpty(packageName) ? "" : packageName));
+                } else {
+                    Log.e(TAG, "stubActivityName is \"\"");
+                }
+            } else {
+                Log.e(TAG, "stubActivityName is null");
+            }
         } else {
             if (intent.getComponent() != null) {
                 String targetPackageName = intent.getComponent().getPackageName();

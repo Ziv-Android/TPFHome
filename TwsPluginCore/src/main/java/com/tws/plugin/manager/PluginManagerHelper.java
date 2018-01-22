@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.tws.plugin.content.PluginDescriptor;
@@ -277,6 +278,7 @@ public class PluginManagerHelper {
         try {
             return resolver.call(uri, method, arg, extras);
         } catch (Exception e) {
+            Log.e("PluginManagerHelper", "call uri fail - uri=" + uri + " method=" + method + " arg=" + arg + " extras=" + extras, e);
             QRomLog.e(TAG, "call uri fail - uri=" + uri + " method=" + method + " arg=" + arg + " extras=" + extras, e);
         }
         return null;
